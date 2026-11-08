@@ -10,7 +10,13 @@ import { PlayerLike } from "@openfront/engine-api/game/ReadViews";
 import { GameConfig } from "@openfront/engine-api/Schemas";
 import { pow } from "../DetMath";
 import { DoomsdayClockSpeed } from "../game/DoomsdayClock";
-import { FIGHTER_JET, TANK, ZOMBIE_RAID_DEFAULTS } from "../game/ModRules";
+import {
+  FIGHTER_JET,
+  TANK,
+  ZOMBIE,
+  ZOMBIE_PLAYER_ID,
+  ZOMBIE_RAID_DEFAULTS,
+} from "../game/ModRules";
 import { assertNever } from "../Util";
 
 export interface NukeMagnitude {
@@ -387,6 +393,9 @@ export class Config {
     }
 
     if (player.type() === PlayerType.Bot) {
+      if (player.id() === ZOMBIE_PLAYER_ID) {
+        return maxTroops * ZOMBIE.troopCapMultiplier;
+      }
       return maxTroops / 3;
     }
 
@@ -417,7 +426,8 @@ export class Config {
     toAdd *= ratio;
 
     if (player.type() === PlayerType.Bot) {
-      toAdd *= 0.5;
+      toAdd *=
+        player.id() === ZOMBIE_PLAYER_ID ? ZOMBIE.troopGrowthMultiplier : 0.5;
     }
 
     if (player.type() === PlayerType.Nation) {

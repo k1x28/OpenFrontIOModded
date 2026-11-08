@@ -60,7 +60,11 @@ Enable it in the lobby ("Zombie Raid") and pick the outbreak time (1 to 60 min
 after the spawn phase).
 
 - **Outbreak.** Every player gets infection sites on their land. Infected land
-  turns into a zombie faction (green) that fights like a tribe.
+  turns into a zombie faction (green). It starts with a huge population (a
+  quarter of a million troops per infected player), holds up to 12x the troops
+  a human could, regrows fast, and attacking it costs 2.5x the troops and goes
+  slower. It is calm: it never expands into free land and only picks fights
+  now and then, so it is a wall to break rather than a rush.
 - **Reanimation.** After the outbreak, any tank, fighter jet or warship that is
   destroyed comes back as a zombie unit. Units of a player who has finished the
   cure stay dead.
@@ -72,6 +76,15 @@ after the spawn phase).
 - The sidebar panel shows the countdown, your cure progress, survivors rescued
   and your buff stacks.
 
+## Nation AI
+
+Nations use the new units. Each builds an airport next to its cities (up to 3)
+for the income, fields tanks from its factories (one, plus one per 200 tiles,
+max 6) and fighter jets from its airports (two each). Tanks park on the border
+with whoever is attacking them (or a hostile neighbour, zombies included) and
+jets chase the nearest enemy plane in range, otherwise cover the same front.
+See `NationModBehavior.ts`.
+
 ## Rebuilding the sprite atlases
 
 `python3 scripts/mod/build_mod_atlases.py` appends the new columns to
@@ -80,8 +93,8 @@ Pillow and `rsvg-convert`.
 
 ## Tests
 
-`tests/ModTankAirJet.test.ts`, `tests/ZombieRaid.test.ts` and
-`tests/ModSnapshots.test.ts` cover the new simulation behaviour.
+`tests/ModTankAirJet.test.ts`, `tests/ZombieRaid.test.ts`,
+`tests/ModNationAI.test.ts` and `tests/ModSnapshots.test.ts` cover the new simulation behaviour.
 
 ## Known limits
 

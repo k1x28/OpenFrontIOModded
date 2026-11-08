@@ -10,6 +10,7 @@ import {
   UnitType,
 } from "@openfront/engine-api/game/GameTypes";
 import { renderTroops } from "@openfront/engine-lib/Format";
+import { ZOMBIE_PLAYER_ID } from "@openfront/engine-lib/game/ModRules";
 import { PseudoRandom } from "@openfront/engine-lib/PseudoRandom";
 import {
   zInt,
@@ -394,6 +395,7 @@ export class AttackExecution implements Execution {
               isTraitor: defender.isTraitor(),
               isDisconnectedTeammate:
                 defender.isDisconnected() && this._owner.isOnSameTeam(defender),
+              isZombie: defender.id() === ZOMBIE_PLAYER_ID,
             },
       defenderHasDefensePost,
       falloutRatio: this.mg.hasFallout(tile)

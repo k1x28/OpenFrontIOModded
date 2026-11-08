@@ -104,10 +104,23 @@ export const ZOMBIE = {
   // Epicenters infect this many tiles around themselves (flood over owned land).
   epicenterTiles: 90,
   // Troops granted to the horde per owned tile each second, on top of normal
-  // regeneration, so it stays a threat while it holds land.
-  troopsPerTilePerSecond: 2,
-  // Troops the horde starts with, per infected player.
-  startingTroopsPerEpicenter: 4_000,
+  // regeneration, so it stays a very real threat while it holds land.
+  troopsPerTilePerSecond: 25,
+  // Troops the horde starts with, per infected player: a large standing
+  // population from the first second.
+  startingTroopsPerEpicenter: 250_000,
+  // The horde's troop cap is this many times a human's with the same land.
+  troopCapMultiplier: 12,
+  // Its natural troop growth is this many times a tribe's normal rate.
+  troopGrowthMultiplier: 8,
+  // Attackers pay this many times the usual troop cost per zombie tile taken,
+  // and zombie tiles fall this many times slower. Zombies get none of the
+  // discount tribes give attackers.
+  attackerLossMultiplier: 2.5,
+  attackSpeedDivisor: 1.5,
+  // The horde sends attacks this many times less often than a tribe, and
+  // never grows into free land: it holds what it took and answers attacks.
+  attackIntervalMultiplier: 5,
   // Survivor camps placed in zombie territory at the outbreak: one per this many
   // zombie tiles, within these bounds.
   tilesPerSurvivorCamp: 120,

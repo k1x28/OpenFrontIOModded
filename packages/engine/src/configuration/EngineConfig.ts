@@ -13,7 +13,10 @@ import { TeamCountConfig } from "@openfront/engine-api/Schemas";
 import { NukeType } from "@openfront/engine-api/StatsSchemas";
 import { Config } from "@openfront/engine-lib/configuration/Config";
 import { exp, log, pow2 } from "@openfront/engine-lib/DetMath";
-import { cargoPlaneBaseGold } from "@openfront/engine-lib/game/ModRules";
+import {
+  cargoPlaneBaseGold,
+  ZOMBIE,
+} from "@openfront/engine-lib/game/ModRules";
 import {
   assertNever,
   sigmoid,
@@ -34,6 +37,8 @@ export interface AttackLogicInput {
     isTraitor: boolean;
     /** Defender is disconnected and on the attacker's team. */
     isDisconnectedTeammate: boolean;
+    /** Defender is the Zombie Raid horde. */
+    isZombie?: boolean;
   } | null;
   /** A defense post owned by the defender is in range of the tile. */
   defenderHasDefensePost: boolean;
@@ -580,9 +585,14 @@ export class EngineConfig extends Config {
     if (
       (attacker.type === PlayerType.Human ||
         attacker.type === PlayerType.Nation) &&
-      defender.type === PlayerType.Bot
+      defender.type === PlayerType.Bot &&
+      defender.isZombie !== true
     ) {
       mag *= BOT_DEFENDER_LOSS_MULT;
+    }
+    // The horde is no soft target: taking its land costs a lot and goes slowly.
+    if (defender.isZombie === true) {
+      mag *= ZOMBIE.attackerLossMultiplier;
     }
 
     // Big territories are cheaper and faster to attack from and into, so
@@ -630,6 +640,7 @@ export class EngineConfig extends Config {
       defenderTroopLoss,
       tickFraction:
         (speedCost *
+          (defender.isZombie === true ? ZOMBIE.attackSpeedDivisor : 1) *
           tileCost *
           largeAttackerSpeedBonus *
           largeDefenderBonus *

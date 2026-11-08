@@ -1,4 +1,5 @@
 ﻿import { Structures } from "@openfront/engine-api/game/GameTypes";
+import { ZOMBIE, ZOMBIE_PLAYER_ID } from "@openfront/engine-lib/game/ModRules";
 import { PseudoRandom } from "@openfront/engine-lib/PseudoRandom";
 import {
   VersionedSchema,
@@ -31,6 +32,8 @@ export class TribeExecution implements Execution {
   private triggerRatio: number;
   private reserveRatio: number;
   private expandRatio: number;
+  // The Zombie Raid horde: attacks rarely and never grows into free land.
+  private calm: boolean;
 
   constructor(private tribe: Player) {
     this.random = new PseudoRandom(simpleHash(tribe.id()));
@@ -39,6 +42,12 @@ export class TribeExecution implements Execution {
     this.triggerRatio = this.random.nextInt(50, 60) / 100;
     this.reserveRatio = this.random.nextInt(30, 40) / 100;
     this.expandRatio = this.random.nextInt(10, 20) / 100;
+    this.calm = tribe.id() === ZOMBIE_PLAYER_ID;
+    if (this.calm) {
+      this.attackRate *= ZOMBIE.attackIntervalMultiplier;
+      this.attackTick = this.random.nextInt(0, this.attackRate);
+      this.neighborsTerraNullius = false;
+    }
   }
 
   activeDuringSpawnPhase(): boolean {
@@ -68,8 +77,8 @@ export class TribeExecution implements Execution {
         this.expandRatio,
       );
 
-      // Send an attack on the first tick
-      this.attackBehavior.sendAttack(this.mg.terraNullius());
+      // Send an attack on the first tick (the horde just holds its ground)
+      if (!this.calm) this.attackBehavior.sendAttack(this.mg.terraNullius());
       return;
     }
 
@@ -80,7 +89,7 @@ export class TribeExecution implements Execution {
       return;
     }
 
-    this.acceptAllAllianceRequests();
+    if (!this.calm) this.acceptAllAllianceRequests();
     this.deleteNextStructure();
     this.maybeAttack();
   }
@@ -141,6 +150,8 @@ export class TribeExecution implements Execution {
       }
     }
 
+    // The horde picks fights only now and then.
+    if (this.calm && !this.random.chance(3)) return;
     this.attackBehavior.attackRandomTarget();
   }
 
@@ -167,6 +178,7 @@ export class TribeExecution implements Execution {
   restoreSnapshot(s: TribeState, r: SnapshotReader): void {
     this.active = s.active;
     this.tribe = r.player(s.tribe);
+    this.calm = this.tribe.id() === ZOMBIE_PLAYER_ID;
     // One PRNG shared with the attack behavior, as in a live game.
     this.random = r.random(s.random);
     if (s.initialized) this.mg = r.game;

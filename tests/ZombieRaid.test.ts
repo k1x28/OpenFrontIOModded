@@ -91,6 +91,30 @@ describe("Zombie Raid", () => {
     expect(p1.numTilesOwned()).toBeGreaterThanOrEqual(before1 * 0.6);
   });
 
+  test("the horde starts with a huge population and keeps it", () => {
+    runToOutbreak();
+    const z = zombie();
+    expect(z.troops()).toBeGreaterThan(500_000);
+    // Far beyond what a tribe with the same land can hold.
+    const cap = game.config().maxTroops(z);
+    const tribeCap = (2 * (z.numTilesOwned() ** 0.6 * 1000 + 50000)) / 3;
+    expect(cap).toBeGreaterThan(tribeCap * 10);
+    executeTicks(game, 300);
+    expect(z.troops()).toBeGreaterThan(500_000);
+  });
+
+  test("the horde holds its ground: no expansion into free land", () => {
+    runToOutbreak();
+    const z = zombie();
+    for (let i = 0; i < 900; i++) {
+      game.executeNextTick();
+      const toFreeLand = z
+        .outgoingAttacks()
+        .filter((a) => !a.target().isPlayer());
+      expect(toFreeLand).toHaveLength(0);
+    }
+  });
+
   test("survivor camps appear on zombie land", () => {
     runToOutbreak();
     const camps = game.units(UnitType.SurvivorCamp);
